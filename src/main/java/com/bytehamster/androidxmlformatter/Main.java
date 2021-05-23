@@ -13,6 +13,7 @@ import org.jdom.output.XMLOutputter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public class Main {
 
@@ -61,6 +62,6 @@ public class Main {
                 cmd.hasOption("attribute-sort"));
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         outputter.output(doc, stream);
-        stream.toString();
+        new FileOutputStream(cmd.getOptionValue("file")).write(stream.toByteArray());
     }
 }
