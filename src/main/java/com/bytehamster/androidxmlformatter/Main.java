@@ -34,6 +34,9 @@ public class Main {
         options.addOption(Option.builder().longOpt("namespace-order")
                 .desc("When ordering attributes by namespace, use this order. Separated by comma.")
                 .hasArg().build());
+        options.addOption(Option.builder().longOpt("namespace-sort")
+                .desc("Sort namespaces.")
+                .build());
 
         CommandLine cmd;
         try {
@@ -61,7 +64,8 @@ public class Main {
                     Integer.parseInt(cmd.getOptionValue("attribute-indention", "8")),
                     cmd.getOptionValue("namespace-order", "android").split(","),
                     cmd.getOptionValue("attribute-order", "id,layout_width,layout_height").split(","),
-                    cmd.hasOption("attribute-sort"));
+                    cmd.hasOption("attribute-sort"),
+                    cmd.hasOption("namespace-sort"));
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             outputter.output(doc, stream);
             byte[] content = stream.toByteArray();

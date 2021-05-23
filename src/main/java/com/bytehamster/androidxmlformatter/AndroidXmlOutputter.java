@@ -24,14 +24,16 @@ public class AndroidXmlOutputter extends XMLOutputter {
     final String[] attributeNameOrder;
     final int attributeIndention;
     final boolean alphabeticalAttributes;
+    final boolean alphabeticalNamespaces;
 
     public AndroidXmlOutputter(int indention, int attributeIndention,
                                String[] namespaceOrder, String[] attributeNameOrder,
-                               boolean alphabeticalAttributes) {
+                               boolean alphabeticalAttributes, boolean alphabeticalNamespaces) {
         this.attributeIndention = attributeIndention;
         this.namespaceOrder = namespaceOrder;
         this.attributeNameOrder = attributeNameOrder;
         this.alphabeticalAttributes = alphabeticalAttributes;
+        this.alphabeticalNamespaces = alphabeticalNamespaces;
 
         Format format = Format.getPrettyFormat();
         format.setIndent(StringUtils.repeat(" ", indention));
@@ -354,7 +356,9 @@ public class AndroidXmlOutputter extends XMLOutputter {
                         return 1;
                     }
                 }
-                return a1.getNamespacePrefix().compareTo(a2.getNamespacePrefix());
+                if (alphabeticalNamespaces) {
+                    return a1.getNamespacePrefix().compareTo(a2.getNamespacePrefix());
+                }
             }
             for (String name : attributeNameOrder) {
                 if (a1.getName().equals(name)) {
