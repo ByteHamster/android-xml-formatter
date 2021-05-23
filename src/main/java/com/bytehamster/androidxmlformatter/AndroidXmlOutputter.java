@@ -35,6 +35,8 @@ public class AndroidXmlOutputter extends XMLOutputter {
 
         Format format = Format.getPrettyFormat();
         format.setIndent(StringUtils.repeat(" ", indention));
+        format.setLineSeparator("\n");
+        format.setEncoding("utf-8");
         setFormat(format);
     }
 
