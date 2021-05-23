@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
 import org.jdom.Comment;
@@ -17,7 +18,22 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 public class AndroidXmlOutputter extends XMLOutputter {
-    public AndroidXmlOutputter() {
+    final String[] namespaceOrder;
+    final String[] attributeNameOrder;
+    final int attributeIndention;
+    final boolean alphabeticalAttributes;
+
+    public AndroidXmlOutputter(int indention, int attributeIndention,
+                               String[] namespaceOrder, String[] attributeNameOrder,
+                               boolean alphabeticalAttributes) {
+        this.attributeIndention = attributeIndention;
+        this.namespaceOrder = namespaceOrder;
+        this.attributeNameOrder = attributeNameOrder;
+        this.alphabeticalAttributes = alphabeticalAttributes;
+
+        Format format = Format.getPrettyFormat();
+        format.setIndent(StringUtils.repeat(" ", indention));
+        setFormat(format);
     }
 
     static private int elementDepth(Element element) {
@@ -60,8 +76,13 @@ public class AndroidXmlOutputter extends XMLOutputter {
         if (list != null) {
             for(int i = 0; i < list.size(); ++i) {
                 Namespace additional = (Namespace)list.get(i);
-                newline(out);
-                indent(out, elementDepth(element) + 1);
+                if (attributeIndention > 0) {
+                    newline(out);
+                    indent(out, elementDepth(element) - 1);
+                    out.write(StringUtils.repeat(" ", attributeIndention));
+                } else {
+                    out.write(" ");
+                }
                 this.printNamespace(out, additional, namespaces);
             }
         }
@@ -319,8 +340,6 @@ public class AndroidXmlOutputter extends XMLOutputter {
         for (Object attribObj : attribs) {
             attributes.add((Attribute) attribObj);
         }
-        String[] namespaceOrder = {"android"};
-        String[] nameOrder = {"id", "layout_width", "layout_height"};
 
         Collections.sort(attributes, (a1, a2) -> {
             if (!a1.getNamespacePrefix().equals(a2.getNamespacePrefix())) {
@@ -333,19 +352,29 @@ public class AndroidXmlOutputter extends XMLOutputter {
                 }
                 return a1.getNamespacePrefix().compareTo(a2.getNamespacePrefix());
             }
-            for (String name : nameOrder) {
+            for (String name : attributeNameOrder) {
                 if (a1.getName().equals(name)) {
                     return -1;
                 } else if (a2.getName().equals(name)) {
                     return 1;
                 }
             }
-            return 0; // Don't re-order other attributes
+            if (alphabeticalAttributes) {
+                return a1.getName().compareTo(a2.getName());
+            } else {
+                return 0; // Sort is stable
+            }
         });
 
         for (Attribute attrib : attributes) {
-            newline(writer);
-            indent(writer, elementDepth(parent) + 1);
+            if (attributeIndention > 0) {
+                newline(writer);
+                indent(writer, elementDepth(parent) - 1);
+                writer.write(StringUtils.repeat(" ", attributeIndention));
+            } else {
+                writer.write(" ");
+            }
+
             printQualifiedName(writer, attrib);
             writer.write("=");
             writer.write("\"");
