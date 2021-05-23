@@ -1,3 +1,5 @@
+package com.bytehamster.androidxmlformatter;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -16,22 +18,22 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();
-        options.addOption(Option.builder("file")
+        options.addOption(Option.builder().longOpt("file")
                 .desc("File to re-format (in-place).")
                 .hasArg().required().build());
-        options.addOption(Option.builder("indention")
+        options.addOption(Option.builder().longOpt("indention")
                 .desc("Indention.")
                 .hasArg().build());
-        options.addOption(Option.builder("attribute_indention")
+        options.addOption(Option.builder().longOpt("attribute-indention")
                 .desc("Indention of attributes. Omit to keep attributes in one line.")
                 .hasArg().build());
-        options.addOption(Option.builder("attribute_order")
+        options.addOption(Option.builder().longOpt("attribute-order")
                 .desc("When ordering attributes by name, use this order. Separated by comma.")
                 .hasArg().build());
-        options.addOption(Option.builder("attribute_sort")
+        options.addOption(Option.builder().longOpt("attribute-sort")
                 .desc("Sort attributes.")
                 .build());
-        options.addOption(Option.builder("namespace_order")
+        options.addOption(Option.builder().longOpt("namespace-order")
                 .desc("When ordering attributes by namespace, use this order. Separated by comma.")
                 .hasArg().build());
 
