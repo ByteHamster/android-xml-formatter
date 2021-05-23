@@ -69,7 +69,7 @@ public class Main {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             outputter.output(doc, stream);
             byte[] content = stream.toByteArray();
-            new FileOutputStream(filename).write(content, 0, content.length - 1); // Strip double line break
+            new FileOutputStream(filename).write(content, 0, content.length - 2); // Strip double line break
         }
     }
 }
