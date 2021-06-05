@@ -304,7 +304,7 @@ public class AndroidXmlOutputter extends XMLOutputter {
         int start = this.skipLeadingWhite(content, 0);
         int size = content.size();
         if (start >= size) {
-            out.write("/>");
+            out.write(" />");
         } else {
             out.write(">");
             newline(out);

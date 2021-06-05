@@ -23,7 +23,7 @@ public class Main {
                 .desc("Indention.")
                 .hasArg().build());
         options.addOption(Option.builder().longOpt("attribute-indention")
-                .desc("Indention of attributes. Omit to keep attributes in one line.")
+                .desc("Indention of attributes.")
                 .hasArg().build());
         options.addOption(Option.builder().longOpt("attribute-order")
                 .desc("When ordering attributes by name, use this order. Separated by comma.")
@@ -61,7 +61,7 @@ public class Main {
             Document doc = new SAXBuilder().build(new FileInputStream(filename));
             XMLOutputter outputter = new AndroidXmlOutputter(
                     Integer.parseInt(cmd.getOptionValue("indention", "4")),
-                    Integer.parseInt(cmd.getOptionValue("attribute-indention", "8")),
+                    Integer.parseInt(cmd.getOptionValue("attribute-indention", "4")),
                     cmd.getOptionValue("namespace-order", "android").split(","),
                     cmd.getOptionValue("attribute-order", "id,layout_width,layout_height").split(","),
                     cmd.hasOption("attribute-sort"),
