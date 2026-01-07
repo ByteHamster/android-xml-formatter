@@ -32,6 +32,7 @@ class AndroidXmlOutputterTest {
         new String[] {"android"},
         new String[] {"id", "layout_width", "layout_height"},
         false,
+        false,
         false);
   }
 
@@ -60,7 +61,8 @@ class AndroidXmlOutputterTest {
   @Test
   void testConstructorWithCustomIndentation() {
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(2, 8, new String[] {"android"}, new String[] {"id"}, false, false);
+        new AndroidXmlOutputter(
+            2, 8, new String[] {"android"}, new String[] {"id"}, false, false, false);
 
     assertEquals("  ", outputter.getFormat().getIndent());
     assertEquals(8, outputter.attributeIndention);
@@ -104,6 +106,7 @@ class AndroidXmlOutputterTest {
             new String[] {"android"},
             new String[] {"text", "id", "background"},
             false,
+            false,
             false);
     String result = formatDocument(outputter, doc);
 
@@ -125,7 +128,7 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 4, new String[] {"android"}, new String[] {}, true, false);
+        new AndroidXmlOutputter(4, 4, new String[] {"android"}, new String[] {}, true, false, false);
     String result = formatDocument(outputter, doc);
 
     int alphaPos = result.indexOf("android:alpha");
@@ -187,7 +190,7 @@ class AndroidXmlOutputterTest {
 
     AndroidXmlOutputter outputter =
         new AndroidXmlOutputter(
-            4, 4, new String[] {"app", "android"}, new String[] {"id"}, false, false);
+            4, 4, new String[] {"app", "android"}, new String[] {"id"}, false, false, false);
     String result = formatDocument(outputter, doc);
 
     int appPos = result.indexOf("app:custom");
@@ -208,7 +211,7 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 4, new String[] {}, new String[] {}, false, true);
+        new AndroidXmlOutputter(4, 4, new String[] {}, new String[] {}, false, true, false);
     String result = formatDocument(outputter, doc);
 
     int androidPos = result.indexOf("android:androidAttr");
@@ -281,7 +284,7 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 4, new String[] {"android"}, new String[] {"id"}, false, false);
+        new AndroidXmlOutputter(4, 4, new String[] {"android"}, new String[] {"id"}, false, false, false);
     String result = formatDocument(outputter, doc);
 
     assertTrue(result.contains("android:id="), "Should contain id attribute");
@@ -381,7 +384,7 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 0, new String[] {"android"}, new String[] {"id"}, false, false);
+        new AndroidXmlOutputter(4, 0, new String[] {"android"}, new String[] {"id"}, false, false, false);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
@@ -557,5 +560,148 @@ class AndroidXmlOutputterTest {
     assertTrue(
         result.contains("style=\"@style/MyStyle\""),
         "Should contain attribute without namespace prefix");
+  }
+
+  // === Multiline Tag End Tests ===
+
+  @Test
+  void testMultilineTagEndEnabledSelfClosingElement() throws Exception {
+    Element root = new Element("View");
+    root.setAttribute(new Attribute("id", "@+id/view", ANDROID_NS));
+    root.setAttribute(new Attribute("layout_width", "match_parent", ANDROID_NS));
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {"id", "layout_width"},
+            false,
+            false,
+            true);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("android:layout_width=\"match_parent\"\n    />"),
+        "Closing tag should be on its own line when multilineTagEnd is enabled");
+  }
+
+  @Test
+  void testMultilineTagEndDisabledSelfClosingElement() throws Exception {
+    Element root = new Element("View");
+    root.setAttribute(new Attribute("id", "@+id/view", ANDROID_NS));
+    root.setAttribute(new Attribute("layout_width", "match_parent", ANDROID_NS));
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {"id", "layout_width"},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("android:layout_width=\"match_parent\" />"),
+        "Closing tag should be inline when multilineTagEnd is disabled");
+  }
+
+  @Test
+  void testMultilineTagEndEnabledElementWithContent() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.setAttribute(new Attribute("id", "@+id/container", ANDROID_NS));
+    root.setAttribute(new Attribute("orientation", "vertical", ANDROID_NS));
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element child = new Element("View");
+    root.addContent(child);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {"id"},
+            false,
+            false,
+            true);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("android:orientation=\"vertical\"\n    >"),
+        "Opening tag end '>' should be on its own line when multilineTagEnd is enabled");
+  }
+
+  @Test
+  void testMultilineTagEndWithNoAttributes() throws Exception {
+    Element root = new Element("View");
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            false,
+            false,
+            true);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains(" />"),
+        "Element with no attributes should have inline closing tag even with multilineTagEnd enabled");
+  }
+
+  @Test
+  void testMultilineTagEndWithZeroAttributeIndention() throws Exception {
+    Element root = new Element("View");
+    root.setAttribute(new Attribute("id", "@+id/view", ANDROID_NS));
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            0,
+            new String[] {"android"},
+            new String[] {"id"},
+            false,
+            false,
+            true);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains(" />"),
+        "With zero attributeIndention, multilineTagEnd should not apply (attributes are inline)");
+  }
+
+  @Test
+  void testMultilineTagEndWithNamespaceDeclaration() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    root.addNamespaceDeclaration(APP_NS);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            false,
+            false,
+            true);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("\n    />"),
+        "Elements with namespace declarations should have closing tag on new line");
   }
 }

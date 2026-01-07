@@ -30,6 +30,7 @@ public class AndroidXmlOutputter {
   final int attributeIndention;
   final boolean alphabeticalAttributes;
   final boolean alphabeticalNamespaces;
+  final boolean multilineTagEnd;
 
   public AndroidXmlOutputter(
       int indention,
@@ -37,12 +38,14 @@ public class AndroidXmlOutputter {
       String[] namespaceOrder,
       String[] attributeNameOrder,
       boolean alphabeticalAttributes,
-      boolean alphabeticalNamespaces) {
+      boolean alphabeticalNamespaces,
+      boolean multilineTagEnd) {
     this.attributeIndention = attributeIndention;
     this.namespaceOrder = namespaceOrder;
     this.attributeNameOrder = attributeNameOrder;
     this.alphabeticalAttributes = alphabeticalAttributes;
     this.alphabeticalNamespaces = alphabeticalNamespaces;
+    this.multilineTagEnd = multilineTagEnd;
 
     this.format = Format.getPrettyFormat();
     this.format.setIndent(StringUtils.repeat(" ", indention));
@@ -111,10 +114,28 @@ public class AndroidXmlOutputter {
     int start = skipLeadingWhite(content, 0);
     int size = content.size();
 
+    boolean hasAttributes =
+        (attributes != null && !attributes.isEmpty())
+            || !element.getAdditionalNamespaces().isEmpty();
+
     if (start >= size) {
-      sb.append(" />\n");
+      if (multilineTagEnd && hasAttributes && attributeIndention > 0) {
+        sb.append("\n");
+        sb.append(indent);
+        sb.append(StringUtils.repeat(" ", attributeIndention));
+        sb.append("/>\n");
+      } else {
+        sb.append(" />\n");
+      }
     } else {
-      sb.append(">");
+      if (multilineTagEnd && hasAttributes && attributeIndention > 0) {
+        sb.append("\n");
+        sb.append(indent);
+        sb.append(StringUtils.repeat(" ", attributeIndention));
+        sb.append(">");
+      } else {
+        sb.append(">");
+      }
       if (nextNonText(content, start) < size) {
         sb.append("\n");
         printContentRange(sb, content, start, size, depth + 1);

@@ -53,6 +53,27 @@ class IntegrationTest {
       boolean attributeSort,
       boolean namespaceSort)
       throws Exception {
+    assertFormattedOutputMatches(
+        testName,
+        indention,
+        attributeIndention,
+        namespaceOrder,
+        attributeOrder,
+        attributeSort,
+        namespaceSort,
+        false);
+  }
+
+  private void assertFormattedOutputMatches(
+      String testName,
+      int indention,
+      int attributeIndention,
+      String[] namespaceOrder,
+      String[] attributeOrder,
+      boolean attributeSort,
+      boolean namespaceSort,
+      boolean multilineTagEnd)
+      throws Exception {
 
     Document inputDoc = parseResource(INPUT_DIR + testName + ".xml");
     String expected = loadResource(EXPECTED_DIR + testName + ".xml");
@@ -64,7 +85,8 @@ class IntegrationTest {
             namespaceOrder,
             attributeOrder,
             attributeSort,
-            namespaceSort);
+            namespaceSort,
+            multilineTagEnd);
 
     String actual = formatDocument(outputter, inputDoc);
 
@@ -203,6 +225,23 @@ class IntegrationTest {
         );
   }
 
+  // === Multiline Tag End Test ===
+
+  @Test
+  @DisplayName("Multiline tag end: closing tags on their own line")
+  void testMultilineTagEnd() throws Exception {
+    assertFormattedOutputMatches(
+        "multiline_tag_end",
+        4, // indention
+        4, // attribute indention
+        new String[] {"android"}, // namespace order
+        new String[] {"id", "layout_width", "layout_height"}, // attribute order
+        false, // attribute sort
+        false, // namespace sort
+        true // multiline tag end
+        );
+  }
+
   // === Additional Integration Tests ===
 
   @Test
@@ -216,6 +255,7 @@ class IntegrationTest {
             0,
             new String[] {"android"},
             new String[] {"id", "layout_width", "layout_height"},
+            false,
             false,
             false);
 
@@ -240,6 +280,7 @@ class IntegrationTest {
             4,
             new String[] {"android"},
             new String[] {"id", "layout_width", "layout_height"},
+            false,
             false,
             false);
 
@@ -267,6 +308,7 @@ class IntegrationTest {
             4,
             new String[] {"android"},
             new String[] {"id", "layout_width", "layout_height"},
+            false,
             false,
             false);
 

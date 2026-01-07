@@ -37,13 +37,13 @@ The coverage report will be available at `target/site/jacoco/index.html`.
 
 ### Test Structure
 
-The project includes 55 tests organized into three test classes:
+The project includes 62 tests organized into three test classes:
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
-| `AndroidXmlOutputterTest` | 31 | Unit tests for the core XML formatting logic |
+| `AndroidXmlOutputterTest` | 37 | Unit tests for the core XML formatting logic |
 | `MainTest` | 13 | Tests for CLI argument parsing and file processing |
-| `IntegrationTest` | 11 | End-to-end tests comparing formatted output against expected files |
+| `IntegrationTest` | 12 | End-to-end tests comparing formatted output against expected files |
 
 **Integration Tests**
 
@@ -59,7 +59,8 @@ src/test/resources/integration/
 │   ├── attribute_sort.xml
 │   ├── custom_namespace_order.xml
 │   ├── namespace_sort.xml
-│   └── combined_options.xml
+│   ├── combined_options.xml
+│   └── multiline_tag_end.xml
 └── expected/                 # Expected output files
     └── (corresponding files)
 ```
@@ -100,6 +101,7 @@ java -jar target/android-xml-formatter-1.1-SNAPSHOT-jar-with-dependencies.jar --
 | `--attribute-sort` | Sort attributes alphabetically |
 | `--namespace-order <list>` | Comma-separated list of namespaces to prioritize (default: `android`) |
 | `--namespace-sort` | Sort namespaces alphabetically |
+| `--multiline-tag-end` | Put closing tag (`/>` or `>`) on its own line for multiline elements |
 
 ### Examples
 
@@ -125,6 +127,31 @@ Sort attributes alphabetically:
 
 ```bash
 java -jar android-xml-formatter.jar --attribute-sort --attribute-order "" layout.xml
+```
+
+Put closing tags on their own line (useful for cleaner diffs):
+
+```bash
+java -jar android-xml-formatter.jar --multiline-tag-end layout.xml
+```
+
+This produces output like:
+
+```xml
+<Button
+    android:id="@+id/button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    />
+```
+
+instead of:
+
+```xml
+<Button
+    android:id="@+id/button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
 ```
 
 ## CI Integration

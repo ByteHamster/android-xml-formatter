@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1-SNAPSHOT] - 2025-01-07
 
+### Added
+
+- New `--multiline-tag-end` option to put closing tags (`/>` or `>`) on their own line for multiline elements
+  - Produces cleaner diffs when attributes are added/removed
+  - See [GitHub Issue #2](https://github.com/ByteHamster/android-xml-formatter/issues/2)
+- Unit test suite with 86% code coverage
+  - `AndroidXmlOutputterTest` - 37 tests for XML formatting (including 6 tests for multiline tag end)
+  - `MainTest` - 13 tests for CLI functionality
+- Integration test suite
+  - 12 integration tests comparing formatted output against expected files
+  - Tests for all CLI options including the new `--multiline-tag-end`
+- JaCoCo for code coverage reporting
+- Spotless Maven plugin with Google Java Format for code formatting
+- Comprehensive README with build, test, and usage instructions
+- Sample XML test resources
+
 ### Changed
 
 - Minimum Java version changed from 8 to 11
@@ -14,16 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgraded Apache Commons CLI from 1.4 to 1.9.0
 - Upgraded Apache Commons Lang from 3.12.0 to 3.17.0
 - Refactored `AndroidXmlOutputter` to use composition instead of inheritance (internal change)
-
-### Added
-
-- Unit test suite with 86% code coverage
-  - `AndroidXmlOutputterTest` - 31 tests for XML formatting
-  - `MainTest` - 13 tests for CLI functionality
-- JaCoCo for code coverage reporting
-- Spotless Maven plugin with Google Java Format for code formatting
-- Comprehensive README with build, test, and usage instructions
-- Sample XML test resources
 
 ### Updated Plugins
 

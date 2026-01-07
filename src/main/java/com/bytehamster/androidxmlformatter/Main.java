@@ -39,6 +39,11 @@ public class Main {
             .hasArg()
             .build());
     options.addOption(Option.builder().longOpt("namespace-sort").desc("Sort namespaces.").build());
+    options.addOption(
+        Option.builder()
+            .longOpt("multiline-tag-end")
+            .desc("Put closing tag (/> or >) on its own line for multiline elements.")
+            .build());
 
     CommandLine cmd;
     try {
@@ -67,7 +72,8 @@ public class Main {
               cmd.getOptionValue("namespace-order", "android").split(","),
               cmd.getOptionValue("attribute-order", "id,layout_width,layout_height").split(","),
               cmd.hasOption("attribute-sort"),
-              cmd.hasOption("namespace-sort"));
+              cmd.hasOption("namespace-sort"),
+              cmd.hasOption("multiline-tag-end"));
       ByteArrayOutputStream stream = new ByteArrayOutputStream();
       outputter.output(doc, stream);
       byte[] content = stream.toByteArray();
