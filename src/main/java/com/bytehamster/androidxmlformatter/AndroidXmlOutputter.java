@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Attribute;
@@ -27,6 +30,7 @@ public class AndroidXmlOutputter {
   private final Format format;
   final String[] namespaceOrder;
   final String[] attributeNameOrder;
+  final Set<String> canOneline;
   final int attributeIndention;
   final boolean alphabeticalAttributes;
   final boolean alphabeticalNamespaces;
@@ -40,9 +44,30 @@ public class AndroidXmlOutputter {
       boolean alphabeticalAttributes,
       boolean alphabeticalNamespaces,
       boolean multilineTagEnd) {
+    this(
+        indention,
+        attributeIndention,
+        namespaceOrder,
+        attributeNameOrder,
+        new String[0],
+        alphabeticalAttributes,
+        alphabeticalNamespaces,
+        multilineTagEnd);
+  }
+
+  public AndroidXmlOutputter(
+      int indention,
+      int attributeIndention,
+      String[] namespaceOrder,
+      String[] attributeNameOrder,
+      String[] canOneline,
+      boolean alphabeticalAttributes,
+      boolean alphabeticalNamespaces,
+      boolean multilineTagEnd) {
     this.attributeIndention = attributeIndention;
     this.namespaceOrder = namespaceOrder;
     this.attributeNameOrder = attributeNameOrder;
+    this.canOneline = new HashSet<>(Arrays.asList(canOneline));
     this.alphabeticalAttributes = alphabeticalAttributes;
     this.alphabeticalNamespaces = alphabeticalNamespaces;
     this.multilineTagEnd = multilineTagEnd;
@@ -164,6 +189,12 @@ public class AndroidXmlOutputter {
     List<Attribute> attributes = new ArrayList<>(parent.getAttributes());
     String indent = StringUtils.repeat(format.getIndent(), depth);
 
+    // Check if this element can be formatted on one line
+    boolean canBeOneLine =
+        canOneline.contains(parent.getName())
+            && parent.getAdditionalNamespaces().isEmpty()
+            && attributes.size() == 1;
+
     Collections.sort(
         attributes,
         (a1, a2) -> {
@@ -194,7 +225,7 @@ public class AndroidXmlOutputter {
         });
 
     for (Attribute attrib : attributes) {
-      if (attributeIndention > 0) {
+      if (attributeIndention > 0 && !canBeOneLine) {
         sb.append("\n");
         sb.append(indent);
         sb.append(StringUtils.repeat(" ", attributeIndention));

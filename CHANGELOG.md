@@ -12,12 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `--multiline-tag-end` option to put closing tags (`/>` or `>`) on their own line for multiline elements
   - Produces cleaner diffs when attributes are added/removed
   - See [GitHub Issue #2](https://github.com/ByteHamster/android-xml-formatter/issues/2)
+- New `--can-oneline` option to allow specified elements to be formatted on a single line when they have only one attribute
+  - Useful for elements like `<include>` and `<merge>` that typically have a single attribute
 - Unit test suite with 86% code coverage
-  - `AndroidXmlOutputterTest` - 37 tests for XML formatting (including 6 tests for multiline tag end)
+  - `AndroidXmlOutputterTest` - 43 tests for XML formatting (including 6 tests for multiline tag end and 6 tests for can-oneline)
   - `MainTest` - 13 tests for CLI functionality
 - Integration test suite
-  - 12 integration tests comparing formatted output against expected files
-  - Tests for all CLI options including the new `--multiline-tag-end`
+  - 14 integration tests comparing formatted output against expected files
+  - Tests for all CLI options including `--multiline-tag-end` and `--can-oneline`
 - JaCoCo for code coverage reporting
 - Spotless Maven plugin with Google Java Format for code formatting
 - Comprehensive README with build, test, and usage instructions

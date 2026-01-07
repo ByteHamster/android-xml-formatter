@@ -704,4 +704,168 @@ class AndroidXmlOutputterTest {
         result.contains("\n    />"),
         "Elements with namespace declarations should have closing tag on new line");
   }
+
+  // === Can Oneline Tests ===
+
+  @Test
+  void testCanOnelineIncludeWithSingleAttribute() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element include = new Element("include");
+    include.setAttribute("layout", "@layout/toolbar");
+    root.addContent(include);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            new String[] {"include", "merge"},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("<include layout=\"@layout/toolbar\" />"),
+        "include element with single attribute should be on one line");
+  }
+
+  @Test
+  void testCanOnelineMergeWithSingleAttribute() throws Exception {
+    Element root = new Element("merge");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element child = new Element("View");
+    root.addContent(child);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            new String[] {"include", "merge"},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    // merge with namespace declaration should not be on one line (has additional namespaces)
+    assertTrue(
+        result.contains("<merge"),
+        "merge element should be present");
+  }
+
+  @Test
+  void testCanOnelineWithMultipleAttributes() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element include = new Element("include");
+    include.setAttribute("layout", "@layout/toolbar");
+    include.setAttribute(new Attribute("visibility", "visible", ANDROID_NS));
+    root.addContent(include);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            new String[] {"include", "merge"},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    assertFalse(
+        result.contains("<include layout=\"@layout/toolbar\" android:visibility=\"visible\" />"),
+        "include element with multiple attributes should NOT be on one line");
+    assertTrue(
+        result.contains("\n        layout=\"@layout/toolbar\""),
+        "include element with multiple attributes should have attributes on separate lines");
+  }
+
+  @Test
+  void testCanOnelineDisabledForNonListedElement() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element button = new Element("Button");
+    button.setAttribute("style", "@style/MyStyle");
+    root.addContent(button);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            new String[] {"include", "merge"},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("\n        style=\"@style/MyStyle\""),
+        "Button element (not in canOneline list) should have attribute on new line");
+  }
+
+  @Test
+  void testCanOnelineWithNamespaceDeclarations() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element include = new Element("include");
+    include.setAttribute("layout", "@layout/toolbar");
+    include.addNamespaceDeclaration(APP_NS);
+    root.addContent(include);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            new String[] {"include", "merge"},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    // With namespace declarations, should not be on one line
+    assertTrue(
+        result.contains("\n        xmlns:app="),
+        "include element with namespace declaration should have attributes on separate lines");
+  }
+
+  @Test
+  void testCanOnelineEmptyList() throws Exception {
+    Element root = new Element("LinearLayout");
+    root.addNamespaceDeclaration(ANDROID_NS);
+    Element include = new Element("include");
+    include.setAttribute("layout", "@layout/toolbar");
+    root.addContent(include);
+    Document doc = new Document(root);
+
+    AndroidXmlOutputter outputter =
+        new AndroidXmlOutputter(
+            4,
+            4,
+            new String[] {"android"},
+            new String[] {},
+            new String[] {},
+            false,
+            false,
+            false);
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("\n        layout=\"@layout/toolbar\""),
+        "include element should have attribute on new line when canOneline list is empty");
+  }
 }

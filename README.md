@@ -37,13 +37,13 @@ The coverage report will be available at `target/site/jacoco/index.html`.
 
 ### Test Structure
 
-The project includes 62 tests organized into three test classes:
+The project includes 70 tests organized into three test classes:
 
 | Test Class | Tests | Description |
 |------------|-------|-------------|
-| `AndroidXmlOutputterTest` | 37 | Unit tests for the core XML formatting logic |
+| `AndroidXmlOutputterTest` | 43 | Unit tests for the core XML formatting logic |
 | `MainTest` | 13 | Tests for CLI argument parsing and file processing |
-| `IntegrationTest` | 12 | End-to-end tests comparing formatted output against expected files |
+| `IntegrationTest` | 14 | End-to-end tests comparing formatted output against expected files |
 
 **Integration Tests**
 
@@ -60,7 +60,8 @@ src/test/resources/integration/
 │   ├── custom_namespace_order.xml
 │   ├── namespace_sort.xml
 │   ├── combined_options.xml
-│   └── multiline_tag_end.xml
+│   ├── multiline_tag_end.xml
+│   └── can_oneline.xml
 └── expected/                 # Expected output files
     └── (corresponding files)
 ```
@@ -102,6 +103,7 @@ java -jar target/android-xml-formatter-1.1-SNAPSHOT-jar-with-dependencies.jar --
 | `--namespace-order <list>` | Comma-separated list of namespaces to prioritize (default: `android`) |
 | `--namespace-sort` | Sort namespaces alphabetically |
 | `--multiline-tag-end` | Put closing tag (`/>` or `>`) on its own line for multiline elements |
+| `--can-oneline <list>` | Elements in this list can use one line if there is only one attribute (comma-separated) |
 
 ### Examples
 
@@ -152,6 +154,25 @@ instead of:
     android:id="@+id/button"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
+```
+
+Allow certain elements to be formatted on one line when they have a single attribute:
+
+```bash
+java -jar android-xml-formatter.jar --can-oneline "include,merge" layout.xml
+```
+
+This allows elements like `<include>` and `<merge>` to be formatted on a single line when they have only one attribute:
+
+```xml
+<include layout="@layout/toolbar" />
+```
+
+instead of:
+
+```xml
+<include
+    layout="@layout/toolbar" />
 ```
 
 ## CI Integration

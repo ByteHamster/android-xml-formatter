@@ -41,6 +41,13 @@ public class Main {
     options.addOption(Option.builder().longOpt("namespace-sort").desc("Sort namespaces.").build());
     options.addOption(
         Option.builder()
+            .longOpt("can-oneline")
+            .desc(
+                "Elements in this list can use one line if there is only one attribute. Separated by comma.")
+            .hasArg()
+            .build());
+    options.addOption(
+        Option.builder()
             .longOpt("multiline-tag-end")
             .desc("Put closing tag (/> or >) on its own line for multiline elements.")
             .build());
@@ -71,6 +78,7 @@ public class Main {
               Integer.parseInt(cmd.getOptionValue("attribute-indention", "4")),
               cmd.getOptionValue("namespace-order", "android").split(","),
               cmd.getOptionValue("attribute-order", "id,layout_width,layout_height").split(","),
+              cmd.getOptionValue("can-oneline", "").split(","),
               cmd.hasOption("attribute-sort"),
               cmd.hasOption("namespace-sort"),
               cmd.hasOption("multiline-tag-end"));

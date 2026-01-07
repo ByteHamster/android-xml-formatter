@@ -74,6 +74,29 @@ class IntegrationTest {
       boolean namespaceSort,
       boolean multilineTagEnd)
       throws Exception {
+    assertFormattedOutputMatches(
+        testName,
+        indention,
+        attributeIndention,
+        namespaceOrder,
+        attributeOrder,
+        new String[0],
+        attributeSort,
+        namespaceSort,
+        multilineTagEnd);
+  }
+
+  private void assertFormattedOutputMatches(
+      String testName,
+      int indention,
+      int attributeIndention,
+      String[] namespaceOrder,
+      String[] attributeOrder,
+      String[] canOneline,
+      boolean attributeSort,
+      boolean namespaceSort,
+      boolean multilineTagEnd)
+      throws Exception {
 
     Document inputDoc = parseResource(INPUT_DIR + testName + ".xml");
     String expected = loadResource(EXPECTED_DIR + testName + ".xml");
@@ -84,6 +107,7 @@ class IntegrationTest {
             attributeIndention,
             namespaceOrder,
             attributeOrder,
+            canOneline,
             attributeSort,
             namespaceSort,
             multilineTagEnd);
@@ -239,6 +263,24 @@ class IntegrationTest {
         false, // attribute sort
         false, // namespace sort
         true // multiline tag end
+        );
+  }
+
+  // === Can Oneline Test ===
+
+  @Test
+  @DisplayName("Can oneline: include and merge elements with single attribute on one line")
+  void testCanOneline() throws Exception {
+    assertFormattedOutputMatches(
+        "can_oneline",
+        4, // indention
+        4, // attribute indention
+        new String[] {"android"}, // namespace order
+        new String[] {"id", "layout_width", "layout_height"}, // attribute order
+        new String[] {"include", "merge"}, // can oneline
+        false, // attribute sort
+        false, // namespace sort
+        false // multiline tag end
         );
   }
 
