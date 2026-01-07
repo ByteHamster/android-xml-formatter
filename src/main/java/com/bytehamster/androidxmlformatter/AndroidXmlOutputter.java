@@ -1,25 +1,30 @@
 package com.bytehamster.androidxmlformatter;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jdom.Attribute;
-import org.jdom.CDATA;
-import org.jdom.Comment;
-import org.jdom.Element;
-import org.jdom.EntityRef;
-import org.jdom.Namespace;
-import org.jdom.ProcessingInstruction;
-import org.jdom.Text;
-import org.jdom.Verifier;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Attribute;
+import org.jdom2.CDATA;
+import org.jdom2.Comment;
+import org.jdom2.Content;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.EntityRef;
+import org.jdom2.Namespace;
+import org.jdom2.ProcessingInstruction;
+import org.jdom2.Text;
+import org.jdom2.Verifier;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
-public class AndroidXmlOutputter extends XMLOutputter {
+public class AndroidXmlOutputter {
+  private final XMLOutputter outputter;
+  private final Format format;
   final String[] namespaceOrder;
   final String[] attributeNameOrder;
   final int attributeIndention;
@@ -39,330 +44,104 @@ public class AndroidXmlOutputter extends XMLOutputter {
     this.alphabeticalAttributes = alphabeticalAttributes;
     this.alphabeticalNamespaces = alphabeticalNamespaces;
 
-    Format format = Format.getPrettyFormat();
-    format.setIndent(StringUtils.repeat(" ", indention));
-    format.setLineSeparator("\n");
-    format.setEncoding("utf-8");
-    setFormat(format);
+    this.format = Format.getPrettyFormat();
+    this.format.setIndent(StringUtils.repeat(" ", indention));
+    this.format.setLineSeparator("\n");
+    this.format.setEncoding("utf-8");
+
+    this.outputter = new XMLOutputter(this.format);
   }
 
-  private static int elementDepth(Element element) {
-    int result = 0;
-    while (element != null) {
-      result++;
-      element = element.getParentElement();
-    }
-    return result;
+  public Format getFormat() {
+    return format;
   }
 
-  private void printNamespace(Writer out, Namespace ns, XMLOutputter.NamespaceStack namespaces)
-      throws IOException {
-    String prefix = ns.getPrefix();
-    String uri = ns.getURI();
-    if (!uri.equals(namespaces.getURI(prefix))) {
-      out.write("xmlns");
-      if (!prefix.equals("")) {
-        out.write(":");
-        out.write(prefix);
-      }
-
-      out.write("=\"");
-      out.write(this.escapeAttributeEntities(uri));
-      out.write("\"");
-      namespaces.push(ns);
-    }
+  public void output(Document doc, Writer writer) throws IOException {
+    writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    Element root = doc.getRootElement();
+    printElement(writer, root, 0);
   }
 
-  private void printElementNamespace(
-      Writer out, Element element, XMLOutputter.NamespaceStack namespaces) throws IOException {
-    Namespace ns = element.getNamespace();
-    if (ns != Namespace.XML_NAMESPACE) {
-      if (ns != Namespace.NO_NAMESPACE || namespaces.getURI("") != null) {
-        this.printNamespace(out, ns, namespaces);
-      }
-    }
+  public void output(Document doc, OutputStream stream) throws IOException {
+    stream.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n".getBytes());
+    Element root = doc.getRootElement();
+    StringBuilder sb = new StringBuilder();
+    printElementToBuilder(sb, root, 0);
+    stream.write(sb.toString().getBytes());
   }
 
-  private void printAdditionalNamespaces(
-      Writer out, Element element, XMLOutputter.NamespaceStack namespaces) throws IOException {
-    List list = element.getAdditionalNamespaces();
-    if (list != null) {
-      for (int i = 0; i < list.size(); ++i) {
-        Namespace additional = (Namespace) list.get(i);
-        if (attributeIndention > 0) {
-          newline(out);
-          indent(out, elementDepth(element) - 1);
-          out.write(StringUtils.repeat(" ", attributeIndention));
-        } else {
-          out.write(" ");
-        }
-        this.printNamespace(out, additional, namespaces);
-      }
-    }
+  private void printElement(Writer writer, Element element, int depth) throws IOException {
+    StringBuilder sb = new StringBuilder();
+    printElementToBuilder(sb, element, depth);
+    writer.write(sb.toString());
   }
 
-  private int skipTrailingWhite(List content, int start) {
-    int size = content.size();
-    if (start > size) {
-      start = size;
+  private void printElementToBuilder(StringBuilder sb, Element element, int depth) {
+    String indent = StringUtils.repeat(format.getIndent(), depth);
+
+    sb.append(indent);
+    sb.append("<");
+    printQualifiedName(sb, element);
+
+    // Print namespace declarations for this element's namespace if at root
+    if (depth == 0 && !element.getNamespace().equals(Namespace.NO_NAMESPACE)) {
+      sb.append(" ");
+      printNamespaceDeclaration(sb, element.getNamespace());
     }
 
-    int index = start;
-    if (this.currentFormat.getTextMode() == Format.TextMode.TRIM_FULL_WHITE
-        || this.currentFormat.getTextMode() == Format.TextMode.NORMALIZE
-        || this.currentFormat.getTextMode() == Format.TextMode.TRIM) {
-      while (index >= 0 && this.isAllWhitespace(content.get(index - 1))) {
-        --index;
-      }
-    }
-
-    return index;
-  }
-
-  private boolean isAllWhitespace(Object obj) {
-    String str = null;
-    if (obj instanceof String) {
-      str = (String) obj;
-    } else {
-      if (!(obj instanceof Text)) {
-        if (obj instanceof EntityRef) {
-          return false;
-        }
-
-        return false;
-      }
-
-      str = ((Text) obj).getText();
-    }
-
-    for (int i = 0; i < str.length(); ++i) {
-      if (!Verifier.isXMLWhitespace(str.charAt(i))) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private int skipLeadingWhite(List content, int start) {
-    if (start < 0) {
-      start = 0;
-    }
-
-    int index = start;
-    int size = content.size();
-    if (true) {
-      while (index < size) {
-        if (!this.isAllWhitespace(content.get(index))) {
-          return index;
-        }
-
-        ++index;
-      }
-    }
-
-    return index;
-  }
-
-  private static int nextNonText(List content, int start) {
-    if (start < 0) {
-      start = 0;
-    }
-
-    int index = start;
-
-    int size;
-    for (size = content.size(); index < size; ++index) {
-      Object node = content.get(index);
-      if (!(node instanceof Text) && !(node instanceof EntityRef)) {
-        return index;
-      }
-    }
-
-    return size;
-  }
-
-  private void printContentRange(
-      Writer out,
-      List content,
-      int start,
-      int end,
-      int level,
-      XMLOutputter.NamespaceStack namespaces)
-      throws IOException {
-    int index = start;
-
-    while (true) {
-      while (index < end) {
-        boolean firstNode = index == start;
-        Object next = content.get(index);
-        if (!(next instanceof Text) && !(next instanceof EntityRef)) {
-          if (!firstNode) {
-            this.newline(out);
-          }
-
-          this.indent(out, level);
-          if (next instanceof Comment) {
-            this.printComment(out, (Comment) next);
-          } else if (next instanceof Element) {
-            this.printElement(out, (Element) next, level, namespaces);
-          } else if (next instanceof ProcessingInstruction) {
-            this.printProcessingInstruction(out, (ProcessingInstruction) next);
-          }
-
-          ++index;
-        } else {
-          int first = this.skipLeadingWhite(content, index);
-          index = nextNonText(content, first);
-          if (first < index) {
-            if (!firstNode) {
-              this.newline(out);
-            }
-
-            this.indent(out, level);
-            this.printTextRange(out, content, first, index);
-          }
-        }
-      }
-
-      return;
-    }
-  }
-
-  private void printString(Writer out, String str) throws IOException {
-    if (this.currentFormat.getTextMode() == Format.TextMode.NORMALIZE) {
-      str = Text.normalizeString(str);
-    } else if (this.currentFormat.getTextMode() == Format.TextMode.TRIM) {
-      str = str.trim();
-    }
-
-    out.write(this.escapeElementEntities(str));
-  }
-
-  private void printTextRange(Writer out, List content, int start, int end) throws IOException {
-    String previous = null;
-    start = this.skipLeadingWhite(content, start);
-    int size = content.size();
-    if (start < size) {
-      end = this.skipTrailingWhite(content, end);
-
-      for (int i = start; i < end; ++i) {
-        Object node = content.get(i);
-        String next;
-        if (node instanceof Text) {
-          next = ((Text) node).getText();
-        } else {
-          if (!(node instanceof EntityRef)) {
-            throw new IllegalStateException("Should see only CDATA, Text, or EntityRef");
-          }
-
-          next = "&" + ((EntityRef) node).getValue() + ";";
-        }
-
-        if (next != null && !"".equals(next)) {
-          if (previous != null
-              && (this.currentFormat.getTextMode() == Format.TextMode.NORMALIZE
-                  || this.currentFormat.getTextMode() == Format.TextMode.TRIM)
-              && (this.endsWithWhite(previous) || this.startsWithWhite(next))) {
-            out.write(" ");
-          }
-
-          if (node instanceof CDATA) {
-            this.printCDATA(out, (CDATA) node);
-          } else if (node instanceof EntityRef) {
-            this.printEntityRef(out, (EntityRef) node);
-          } else {
-            this.printString(out, next);
-          }
-
-          previous = next;
-        }
-      }
-    }
-  }
-
-  private boolean startsWithWhite(String str) {
-    return str != null && str.length() > 0 && Verifier.isXMLWhitespace(str.charAt(0));
-  }
-
-  private boolean endsWithWhite(String str) {
-    return str != null
-        && str.length() > 0
-        && Verifier.isXMLWhitespace(str.charAt(str.length() - 1));
-  }
-
-  @Override
-  protected void printElement(Writer out, Element element, int level, NamespaceStack namespaces)
-      throws IOException {
-    List attributes = element.getAttributes();
-    List content = element.getContent();
-    String space = null;
-    if (attributes != null) {
-      space = element.getAttributeValue("space", Namespace.XML_NAMESPACE);
-    }
-
-    Format previousFormat = this.currentFormat;
-    if ("default".equals(space)) {
-      this.currentFormat = this.getFormat();
-    } else if ("preserve".equals(space)) {
-      this.currentFormat = preserveFormat;
-    }
-
-    out.write("<");
-    this.printQualifiedName(out, element);
-    int previouslyDeclaredNamespaces = namespaces.size();
-    this.printElementNamespace(out, element, namespaces);
-    this.printAdditionalNamespaces(out, element, namespaces);
-    if (attributes != null) {
-      this.printAttributes(out, attributes, element, namespaces);
-    }
-
-    int start = this.skipLeadingWhite(content, 0);
-    int size = content.size();
-    if (start >= size) {
-      out.write(" />");
-    } else {
-      out.write(">");
-      newline(out);
-      if (nextNonText(content, start) < size) {
-        this.newline(out);
-        this.printContentRange(out, content, start, size, level + 1, namespaces);
-        this.newline(out);
-        this.indent(out, level);
+    // Print additional namespace declarations
+    for (Namespace ns : element.getAdditionalNamespaces()) {
+      if (attributeIndention > 0) {
+        sb.append("\n");
+        sb.append(indent);
+        sb.append(StringUtils.repeat(" ", attributeIndention));
       } else {
-        this.printTextRange(out, content, start, size);
+        sb.append(" ");
       }
-
-      out.write("</");
-      this.printQualifiedName(out, element);
-      out.write(">");
+      printNamespaceDeclaration(sb, ns);
     }
 
-    while (namespaces.size() > previouslyDeclaredNamespaces) {
-      namespaces.pop();
+    // Print attributes
+    List<Attribute> attributes = element.getAttributes();
+    if (attributes != null && !attributes.isEmpty()) {
+      printAttributes(sb, element, depth);
     }
 
-    this.currentFormat = previousFormat;
-    newline(out);
+    List<Content> content = element.getContent();
+    int start = skipLeadingWhite(content, 0);
+    int size = content.size();
+
+    if (start >= size) {
+      sb.append(" />\n");
+    } else {
+      sb.append(">");
+      if (nextNonText(content, start) < size) {
+        sb.append("\n");
+        printContentRange(sb, content, start, size, depth + 1);
+        sb.append(indent);
+      } else {
+        printTextRange(sb, content, start, size);
+      }
+      sb.append("</");
+      printQualifiedName(sb, element);
+      sb.append(">\n");
+    }
   }
 
-  private void newline(Writer out) throws IOException {
-    out.write(getFormat().getLineSeparator());
+  private void printNamespaceDeclaration(StringBuilder sb, Namespace ns) {
+    sb.append("xmlns");
+    if (!ns.getPrefix().isEmpty()) {
+      sb.append(":");
+      sb.append(ns.getPrefix());
+    }
+    sb.append("=\"");
+    sb.append(escapeAttribute(ns.getURI()));
+    sb.append("\"");
   }
 
-  private void indent(Writer out, int level) throws IOException {
-    for (int i = 0; i < level; ++i) {
-      out.write(getFormat().getIndent());
-    }
-  }
-
-  @Override
-  protected void printAttributes(Writer writer, List attribs, Element parent, NamespaceStack ns)
-      throws IOException {
-    List<Attribute> attributes = new ArrayList<>();
-    for (Object attribObj : attribs) {
-      attributes.add((Attribute) attribObj);
-    }
+  private void printAttributes(StringBuilder sb, Element parent, int depth) {
+    List<Attribute> attributes = new ArrayList<>(parent.getAttributes());
+    String indent = StringUtils.repeat(format.getIndent(), depth);
 
     Collections.sort(
         attributes,
@@ -395,39 +174,193 @@ public class AndroidXmlOutputter extends XMLOutputter {
 
     for (Attribute attrib : attributes) {
       if (attributeIndention > 0) {
-        newline(writer);
-        indent(writer, elementDepth(parent) - 1);
-        writer.write(StringUtils.repeat(" ", attributeIndention));
+        sb.append("\n");
+        sb.append(indent);
+        sb.append(StringUtils.repeat(" ", attributeIndention));
       } else {
-        writer.write(" ");
+        sb.append(" ");
       }
 
-      printQualifiedName(writer, attrib);
-      writer.write("=");
-      writer.write("\"");
-      writer.write(escapeAttributeEntities(attrib.getValue()));
-      writer.write("\"");
+      printQualifiedName(sb, attrib);
+      sb.append("=\"");
+      sb.append(escapeAttribute(attrib.getValue()));
+      sb.append("\"");
     }
   }
 
-  private void printQualifiedName(Writer out, Attribute a) throws IOException {
+  private void printContentRange(
+      StringBuilder sb, List<Content> content, int start, int end, int depth) {
+    int index = start;
+
+    while (index < end) {
+      Content next = content.get(index);
+      if (!(next instanceof Text) && !(next instanceof EntityRef)) {
+        String indent = StringUtils.repeat(format.getIndent(), depth);
+        if (next instanceof Comment) {
+          sb.append(indent);
+          sb.append("<!--");
+          sb.append(((Comment) next).getText());
+          sb.append("-->\n");
+        } else if (next instanceof Element) {
+          printElementToBuilder(sb, (Element) next, depth);
+        } else if (next instanceof ProcessingInstruction) {
+          ProcessingInstruction pi = (ProcessingInstruction) next;
+          sb.append(indent);
+          sb.append("<?");
+          sb.append(pi.getTarget());
+          sb.append(" ");
+          sb.append(pi.getData());
+          sb.append("?>\n");
+        } else if (next instanceof CDATA) {
+          sb.append(indent);
+          sb.append("<![CDATA[");
+          sb.append(((CDATA) next).getText());
+          sb.append("]]>\n");
+        }
+        ++index;
+      } else {
+        int first = skipLeadingWhite(content, index);
+        index = nextNonText(content, first);
+        if (first < index) {
+          String indent = StringUtils.repeat(format.getIndent(), depth);
+          sb.append(indent);
+          printTextRange(sb, content, first, index);
+          sb.append("\n");
+        }
+      }
+    }
+  }
+
+  private void printTextRange(StringBuilder sb, List<Content> content, int start, int end) {
+    start = skipLeadingWhite(content, start);
+    int size = content.size();
+    if (start < size) {
+      end = skipTrailingWhite(content, end);
+
+      for (int i = start; i < end; ++i) {
+        Content node = content.get(i);
+        String text;
+        if (node instanceof Text) {
+          text = ((Text) node).getText().trim();
+        } else if (node instanceof EntityRef) {
+          text = "&" + ((EntityRef) node).getName() + ";";
+        } else if (node instanceof CDATA) {
+          sb.append("<![CDATA[");
+          sb.append(((CDATA) node).getText());
+          sb.append("]]>");
+          continue;
+        } else {
+          continue;
+        }
+
+        if (text != null && !text.isEmpty()) {
+          sb.append(escapeText(text));
+        }
+      }
+    }
+  }
+
+  private int skipLeadingWhite(List<Content> content, int start) {
+    if (start < 0) {
+      start = 0;
+    }
+
+    int index = start;
+    int size = content.size();
+    while (index < size) {
+      if (!isAllWhitespace(content.get(index))) {
+        return index;
+      }
+      ++index;
+    }
+    return index;
+  }
+
+  private int skipTrailingWhite(List<Content> content, int start) {
+    int size = content.size();
+    if (start > size) {
+      start = size;
+    }
+
+    int index = start;
+    while (index > 0 && isAllWhitespace(content.get(index - 1))) {
+      --index;
+    }
+
+    return index;
+  }
+
+  private boolean isAllWhitespace(Object obj) {
+    String str = null;
+    if (obj instanceof String) {
+      str = (String) obj;
+    } else if (obj instanceof Text) {
+      str = ((Text) obj).getText();
+    } else if (obj instanceof EntityRef) {
+      return false;
+    } else {
+      return false;
+    }
+
+    for (int i = 0; i < str.length(); ++i) {
+      if (!Verifier.isXMLWhitespace(str.charAt(i))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private int nextNonText(List<Content> content, int start) {
+    if (start < 0) {
+      start = 0;
+    }
+
+    int index = start;
+    int size = content.size();
+    while (index < size) {
+      Content node = content.get(index);
+      if (!(node instanceof Text) && !(node instanceof EntityRef)) {
+        return index;
+      }
+      ++index;
+    }
+
+    return size;
+  }
+
+  private void printQualifiedName(StringBuilder sb, Attribute a) {
     String prefix = a.getNamespace().getPrefix();
-    if (prefix != null && !prefix.equals("")) {
-      out.write(prefix);
-      out.write(58);
-      out.write(a.getName());
-    } else {
-      out.write(a.getName());
+    if (prefix != null && !prefix.isEmpty()) {
+      sb.append(prefix);
+      sb.append(":");
     }
+    sb.append(a.getName());
   }
 
-  private void printQualifiedName(Writer out, Element e) throws IOException {
-    if (e.getNamespace().getPrefix().length() == 0) {
-      out.write(e.getName());
-    } else {
-      out.write(e.getNamespace().getPrefix());
-      out.write(58);
-      out.write(e.getName());
+  private void printQualifiedName(StringBuilder sb, Element e) {
+    if (!e.getNamespace().getPrefix().isEmpty()) {
+      sb.append(e.getNamespace().getPrefix());
+      sb.append(":");
     }
+    sb.append(e.getName());
+  }
+
+  private String escapeAttribute(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;");
+  }
+
+  private String escapeText(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
   }
 }

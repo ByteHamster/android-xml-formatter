@@ -11,9 +11,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 
 public class Main {
 
@@ -61,7 +60,7 @@ public class Main {
 
     for (String filename : cmd.getArgList()) {
       Document doc = new SAXBuilder().build(new FileInputStream(filename));
-      XMLOutputter outputter =
+      AndroidXmlOutputter outputter =
           new AndroidXmlOutputter(
               Integer.parseInt(cmd.getOptionValue("indention", "4")),
               Integer.parseInt(cmd.getOptionValue("attribute-indention", "4")),
