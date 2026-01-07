@@ -86,14 +86,48 @@ public class AndroidXmlOutputter {
 
   public void output(Document doc, Writer writer) throws IOException {
     writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+
+    // Output document-level content before the root element
+    for (Content content : doc.getContent()) {
+      if (content instanceof Comment) {
+        writer.write("<!--");
+        writer.write(((Comment) content).getText());
+        writer.write("-->\n");
+      } else if (content instanceof ProcessingInstruction) {
+        ProcessingInstruction pi = (ProcessingInstruction) content;
+        writer.write("<?");
+        writer.write(pi.getTarget());
+        writer.write(" ");
+        writer.write(pi.getData());
+        writer.write("?>\n");
+      }
+    }
+
     Element root = doc.getRootElement();
     printElement(writer, root, 0);
   }
 
   public void output(Document doc, OutputStream stream) throws IOException {
-    stream.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n".getBytes());
-    Element root = doc.getRootElement();
     StringBuilder sb = new StringBuilder();
+    sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+
+    // Output document-level content before the root element
+    for (Content content : doc.getContent()) {
+      if (content instanceof Comment) {
+        sb.append("<!--");
+        sb.append(((Comment) content).getText());
+        sb.append("-->\n");
+      } else if (content instanceof ProcessingInstruction) {
+        ProcessingInstruction pi = (ProcessingInstruction) content;
+        sb.append("<?");
+        sb.append(pi.getTarget());
+        sb.append(" ");
+        sb.append(pi.getData());
+        sb.append("?>\n");
+      }
+    }
+
+    Element root = doc.getRootElement();
     printElementToBuilder(sb, root, 0);
     stream.write(sb.toString().getBytes());
   }

@@ -128,7 +128,8 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 4, new String[] {"android"}, new String[] {}, true, false, false);
+        new AndroidXmlOutputter(
+            4, 4, new String[] {"android"}, new String[] {}, true, false, false);
     String result = formatDocument(outputter, doc);
 
     int alphaPos = result.indexOf("android:alpha");
@@ -284,7 +285,8 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 4, new String[] {"android"}, new String[] {"id"}, false, false, false);
+        new AndroidXmlOutputter(
+            4, 4, new String[] {"android"}, new String[] {"id"}, false, false, false);
     String result = formatDocument(outputter, doc);
 
     assertTrue(result.contains("android:id="), "Should contain id attribute");
@@ -384,7 +386,8 @@ class AndroidXmlOutputterTest {
     Document doc = new Document(root);
 
     AndroidXmlOutputter outputter =
-        new AndroidXmlOutputter(4, 0, new String[] {"android"}, new String[] {"id"}, false, false, false);
+        new AndroidXmlOutputter(
+            4, 0, new String[] {"android"}, new String[] {"id"}, false, false, false);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
@@ -624,13 +627,7 @@ class AndroidXmlOutputterTest {
 
     AndroidXmlOutputter outputter =
         new AndroidXmlOutputter(
-            4,
-            4,
-            new String[] {"android"},
-            new String[] {"id"},
-            false,
-            false,
-            true);
+            4, 4, new String[] {"android"}, new String[] {"id"}, false, false, true);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
@@ -645,13 +642,7 @@ class AndroidXmlOutputterTest {
 
     AndroidXmlOutputter outputter =
         new AndroidXmlOutputter(
-            4,
-            4,
-            new String[] {"android"},
-            new String[] {},
-            false,
-            false,
-            true);
+            4, 4, new String[] {"android"}, new String[] {}, false, false, true);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
@@ -668,13 +659,7 @@ class AndroidXmlOutputterTest {
 
     AndroidXmlOutputter outputter =
         new AndroidXmlOutputter(
-            4,
-            0,
-            new String[] {"android"},
-            new String[] {"id"},
-            false,
-            false,
-            true);
+            4, 0, new String[] {"android"}, new String[] {"id"}, false, false, true);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
@@ -691,13 +676,7 @@ class AndroidXmlOutputterTest {
 
     AndroidXmlOutputter outputter =
         new AndroidXmlOutputter(
-            4,
-            4,
-            new String[] {"android"},
-            new String[] {},
-            false,
-            false,
-            true);
+            4, 4, new String[] {"android"}, new String[] {}, false, false, true);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
@@ -754,9 +733,7 @@ class AndroidXmlOutputterTest {
     String result = formatDocument(outputter, doc);
 
     // merge with namespace declaration should not be on one line (has additional namespaces)
-    assertTrue(
-        result.contains("<merge"),
-        "merge element should be present");
+    assertTrue(result.contains("<merge"), "merge element should be present");
   }
 
   @Test
@@ -854,18 +831,83 @@ class AndroidXmlOutputterTest {
 
     AndroidXmlOutputter outputter =
         new AndroidXmlOutputter(
-            4,
-            4,
-            new String[] {"android"},
-            new String[] {},
-            new String[] {},
-            false,
-            false,
-            false);
+            4, 4, new String[] {"android"}, new String[] {}, new String[] {}, false, false, false);
     String result = formatDocument(outputter, doc);
 
     assertTrue(
         result.contains("\n        layout=\"@layout/toolbar\""),
         "include element should have attribute on new line when canOneline list is empty");
+  }
+
+  // === Document-Level Comment Tests ===
+
+  @Test
+  void testCopyrightHeaderPreserved() throws Exception {
+    String xml =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<!--\n"
+            + "  Copyright 2025 Example Corp.\n"
+            + "  All rights reserved.\n"
+            + "-->\n"
+            + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
+            + "    <Button />\n"
+            + "</LinearLayout>";
+
+    Document doc = parseXml(xml);
+    AndroidXmlOutputter outputter = createDefaultOutputter();
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("Copyright 2025 Example Corp"),
+        "Copyright header comment should be preserved in output");
+  }
+
+  @Test
+  void testDocumentLevelCommentBeforeRoot() throws Exception {
+    String xml =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<!-- This is a document-level comment -->\n"
+            + "<View />";
+
+    Document doc = parseXml(xml);
+    AndroidXmlOutputter outputter = createDefaultOutputter();
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("This is a document-level comment"),
+        "Document-level comment before root element should be preserved");
+  }
+
+  @Test
+  void testMultipleDocumentLevelComments() throws Exception {
+    String xml =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<!-- First comment -->\n"
+            + "<!-- Second comment -->\n"
+            + "<View />";
+
+    Document doc = parseXml(xml);
+    AndroidXmlOutputter outputter = createDefaultOutputter();
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("First comment") && result.contains("Second comment"),
+        "Multiple document-level comments should be preserved");
+  }
+
+  @Test
+  void testProcessingInstructionBeforeRoot() throws Exception {
+    String xml =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<?xml-stylesheet type=\"text/xsl\" href=\"style.xsl\"?>\n"
+            + "<View />";
+
+    Document doc = parseXml(xml);
+    AndroidXmlOutputter outputter = createDefaultOutputter();
+    String result = formatDocument(outputter, doc);
+
+    assertTrue(
+        result.contains("xml-stylesheet"),
+        "Processing instruction before root element should be preserved");
   }
 }
