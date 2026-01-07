@@ -35,6 +35,37 @@ mvn clean test jacoco:report
 
 The coverage report will be available at `target/site/jacoco/index.html`.
 
+### Test Structure
+
+The project includes 55 tests organized into three test classes:
+
+| Test Class | Tests | Description |
+|------------|-------|-------------|
+| `AndroidXmlOutputterTest` | 31 | Unit tests for the core XML formatting logic |
+| `MainTest` | 13 | Tests for CLI argument parsing and file processing |
+| `IntegrationTest` | 11 | End-to-end tests comparing formatted output against expected files |
+
+**Integration Tests**
+
+Integration tests use input/expected file pairs located in `src/test/resources/integration/`:
+
+```
+src/test/resources/integration/
+├── input/                    # Input XML files
+│   ├── default_options.xml
+│   ├── custom_indention.xml
+│   ├── custom_attribute_indention.xml
+│   ├── custom_attribute_order.xml
+│   ├── attribute_sort.xml
+│   ├── custom_namespace_order.xml
+│   ├── namespace_sort.xml
+│   └── combined_options.xml
+└── expected/                 # Expected output files
+    └── (corresponding files)
+```
+
+Each integration test formats an input file with specific options and compares the result against the expected output file.
+
 ## Code Formatting
 
 This project uses [Spotless](https://github.com/diffplug/spotless) with Google Java Format for code formatting.
