@@ -364,4 +364,56 @@ class MainTest {
       restoreStreams();
     }
   }
+
+  @Test
+  void testOutputFileNotTruncated() throws Exception {
+    String xml =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+            + "    android:layout_width=\"match_parent\"\n"
+            + "    android:layout_height=\"match_parent\">\n"
+            + "    <Button />\n"
+            + "</LinearLayout>\n";
+
+    File testFile = createTestXmlFile(xml);
+
+    try {
+      Main.main(new String[] {testFile.getAbsolutePath()});
+      String result = new String(Files.readAllBytes(testFile.toPath()));
+
+      assertTrue(
+          result.endsWith("</LinearLayout>\n"),
+          "Output file should end with complete closing tag and newline, but was: '"
+              + result.substring(Math.max(0, result.length() - 20))
+              + "'");
+      assertTrue(
+          result.contains("</LinearLayout>"),
+          "Output file should contain complete closing tag");
+    } finally {
+      restoreStreams();
+    }
+  }
+
+  @Test
+  void testSelfClosingElementNotTruncated() throws Exception {
+    String xml =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            + "<View xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+            + "    android:id=\"@+id/view\" />\n";
+
+    File testFile = createTestXmlFile(xml);
+
+    try {
+      Main.main(new String[] {testFile.getAbsolutePath()});
+      String result = new String(Files.readAllBytes(testFile.toPath()));
+
+      assertTrue(
+          result.endsWith("/>\n"),
+          "Self-closing element should end with '/>' and newline, but was: '"
+              + result.substring(Math.max(0, result.length() - 20))
+              + "'");
+    } finally {
+      restoreStreams();
+    }
+  }
 }
