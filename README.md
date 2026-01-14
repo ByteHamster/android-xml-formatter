@@ -1,6 +1,6 @@
 # android-xml-formatter
 
-[![GitHub check runs](https://img.shields.io/github/check-runs/ByteHamster/android-xml-formatter/develop)](https://github.com/ByteHamster/android-xml-formatter/actions/workflows/checks.yml?query=branch%3Amain)
+[![GitHub check runs](https://img.shields.io/github/check-runs/ByteHamster/android-xml-formatter/main)](https://github.com/ByteHamster/android-xml-formatter/actions/workflows/checks.yml?query=branch%3Amain)
 [![License: GPL v3](https://img.shields.io/github/license/ByteHamster/android-xml-formatter)](https://www.gnu.org/licenses/gpl-3.0)
 [![GitHub Release](https://img.shields.io/github/v/release/ByteHamster/android-xml-formatter)](https://github.com/ByteHamster/android-xml-formatter/releases)
 
