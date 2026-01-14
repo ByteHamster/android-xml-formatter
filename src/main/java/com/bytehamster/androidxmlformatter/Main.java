@@ -63,13 +63,15 @@ public class Main {
                     Integer.parseInt(cmd.getOptionValue("indention", "4")),
                     Integer.parseInt(cmd.getOptionValue("attribute-indention", "4")),
                     cmd.getOptionValue("namespace-order", "android").split(","),
-                    cmd.getOptionValue("attribute-order", "id,layout_width,layout_height").split(","),
+                    cmd.getOptionValue("attribute-order", "id,layout_width,layout_height")
+                            .split(","),
                     cmd.hasOption("attribute-sort"),
                     cmd.hasOption("namespace-sort"));
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             outputter.output(doc, stream);
             byte[] content = stream.toByteArray();
-            new FileOutputStream(filename).write(content, 0, content.length - 2); // Strip double line break
+            new FileOutputStream(filename).write(content, 0, content.length - 2); // Strip double
+                                                                                  // line break
         }
     }
 }

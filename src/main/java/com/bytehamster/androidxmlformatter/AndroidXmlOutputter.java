@@ -1,11 +1,5 @@
 package com.bytehamster.androidxmlformatter;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.CDATA;
@@ -19,6 +13,12 @@ import org.jdom.Verifier;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class AndroidXmlOutputter extends XMLOutputter {
     final String[] namespaceOrder;
     final String[] attributeNameOrder;
@@ -27,8 +27,8 @@ public class AndroidXmlOutputter extends XMLOutputter {
     final boolean alphabeticalNamespaces;
 
     public AndroidXmlOutputter(int indention, int attributeIndention,
-                               String[] namespaceOrder, String[] attributeNameOrder,
-                               boolean alphabeticalAttributes, boolean alphabeticalNamespaces) {
+            String[] namespaceOrder, String[] attributeNameOrder,
+            boolean alphabeticalAttributes, boolean alphabeticalNamespaces) {
         this.attributeIndention = attributeIndention;
         this.namespaceOrder = namespaceOrder;
         this.attributeNameOrder = attributeNameOrder;
@@ -51,7 +51,8 @@ public class AndroidXmlOutputter extends XMLOutputter {
         return result;
     }
 
-    private void printNamespace(Writer out, Namespace ns, XMLOutputter.NamespaceStack namespaces) throws IOException {
+    private void printNamespace(Writer out, Namespace ns, XMLOutputter.NamespaceStack namespaces)
+            throws IOException {
         String prefix = ns.getPrefix();
         String uri = ns.getURI();
         if (!uri.equals(namespaces.getURI(prefix))) {
@@ -67,7 +68,9 @@ public class AndroidXmlOutputter extends XMLOutputter {
             namespaces.push(ns);
         }
     }
-    private void printElementNamespace(Writer out, Element element, XMLOutputter.NamespaceStack namespaces) throws IOException {
+
+    private void printElementNamespace(Writer out, Element element,
+            XMLOutputter.NamespaceStack namespaces) throws IOException {
         Namespace ns = element.getNamespace();
         if (ns != Namespace.XML_NAMESPACE) {
             if (ns != Namespace.NO_NAMESPACE || namespaces.getURI("") != null) {
@@ -77,11 +80,12 @@ public class AndroidXmlOutputter extends XMLOutputter {
         }
     }
 
-    private void printAdditionalNamespaces(Writer out, Element element, XMLOutputter.NamespaceStack namespaces) throws IOException {
+    private void printAdditionalNamespaces(Writer out, Element element,
+            XMLOutputter.NamespaceStack namespaces) throws IOException {
         List list = element.getAdditionalNamespaces();
         if (list != null) {
-            for(int i = 0; i < list.size(); ++i) {
-                Namespace additional = (Namespace)list.get(i);
+            for (int i = 0; i < list.size(); ++i) {
+                Namespace additional = (Namespace) list.get(i);
                 if (attributeIndention > 0) {
                     newline(out);
                     indent(out, elementDepth(element) - 1);
@@ -105,7 +109,7 @@ public class AndroidXmlOutputter extends XMLOutputter {
         if (this.currentFormat.getTextMode() == Format.TextMode.TRIM_FULL_WHITE
                 || this.currentFormat.getTextMode() == Format.TextMode.NORMALIZE
                 || this.currentFormat.getTextMode() == Format.TextMode.TRIM) {
-            while(index >= 0 && this.isAllWhitespace(content.get(index - 1))) {
+            while (index >= 0 && this.isAllWhitespace(content.get(index - 1))) {
                 --index;
             }
         }
@@ -116,7 +120,7 @@ public class AndroidXmlOutputter extends XMLOutputter {
     private boolean isAllWhitespace(Object obj) {
         String str = null;
         if (obj instanceof String) {
-            str = (String)obj;
+            str = (String) obj;
         } else {
             if (!(obj instanceof Text)) {
                 if (obj instanceof EntityRef) {
@@ -126,10 +130,10 @@ public class AndroidXmlOutputter extends XMLOutputter {
                 return false;
             }
 
-            str = ((Text)obj).getText();
+            str = ((Text) obj).getText();
         }
 
-        for(int i = 0; i < str.length(); ++i) {
+        for (int i = 0; i < str.length(); ++i) {
             if (!Verifier.isXMLWhitespace(str.charAt(i))) {
                 return false;
             }
@@ -146,7 +150,7 @@ public class AndroidXmlOutputter extends XMLOutputter {
         int index = start;
         int size = content.size();
         if (true) {
-            while(index < size) {
+            while (index < size) {
                 if (!this.isAllWhitespace(content.get(index))) {
                     return index;
                 }
@@ -166,7 +170,7 @@ public class AndroidXmlOutputter extends XMLOutputter {
         int index = start;
 
         int size;
-        for(size = content.size(); index < size; ++index) {
+        for (size = content.size(); index < size; ++index) {
             Object node = content.get(index);
             if (!(node instanceof Text) && !(node instanceof EntityRef)) {
                 return index;
@@ -176,11 +180,12 @@ public class AndroidXmlOutputter extends XMLOutputter {
         return size;
     }
 
-    private void printContentRange(Writer out, List content, int start, int end, int level, XMLOutputter.NamespaceStack namespaces) throws IOException {
+    private void printContentRange(Writer out, List content, int start, int end, int level,
+            XMLOutputter.NamespaceStack namespaces) throws IOException {
         int index = start;
 
-        while(true) {
-            while(index < end) {
+        while (true) {
+            while (index < end) {
                 boolean firstNode = index == start;
                 Object next = content.get(index);
                 if (!(next instanceof Text) && !(next instanceof EntityRef)) {
@@ -190,11 +195,11 @@ public class AndroidXmlOutputter extends XMLOutputter {
 
                     this.indent(out, level);
                     if (next instanceof Comment) {
-                        this.printComment(out, (Comment)next);
+                        this.printComment(out, (Comment) next);
                     } else if (next instanceof Element) {
-                        this.printElement(out, (Element)next, level, namespaces);
+                        this.printElement(out, (Element) next, level, namespaces);
                     } else if (next instanceof ProcessingInstruction) {
-                        this.printProcessingInstruction(out, (ProcessingInstruction)next);
+                        this.printProcessingInstruction(out, (ProcessingInstruction) next);
                     }
 
                     ++index;
@@ -233,30 +238,32 @@ public class AndroidXmlOutputter extends XMLOutputter {
         if (start < size) {
             end = this.skipTrailingWhite(content, end);
 
-            for(int i = start; i < end; ++i) {
+            for (int i = start; i < end; ++i) {
                 Object node = content.get(i);
                 String next;
                 if (node instanceof Text) {
-                    next = ((Text)node).getText();
+                    next = ((Text) node).getText();
                 } else {
                     if (!(node instanceof EntityRef)) {
-                        throw new IllegalStateException("Should see only CDATA, Text, or EntityRef");
+                        throw new IllegalStateException(
+                                "Should see only CDATA, Text, or EntityRef");
                     }
 
-                    next = "&" + ((EntityRef)node).getValue() + ";";
+                    next = "&" + ((EntityRef) node).getValue() + ";";
                 }
 
                 if (next != null && !"".equals(next)) {
-                    if (previous != null && (this.currentFormat.getTextMode() == Format.TextMode.NORMALIZE
-                            || this.currentFormat.getTextMode() == Format.TextMode.TRIM)
+                    if (previous != null
+                            && (this.currentFormat.getTextMode() == Format.TextMode.NORMALIZE
+                                    || this.currentFormat.getTextMode() == Format.TextMode.TRIM)
                             && (this.endsWithWhite(previous) || this.startsWithWhite(next))) {
                         out.write(" ");
                     }
 
                     if (node instanceof CDATA) {
-                        this.printCDATA(out, (CDATA)node);
+                        this.printCDATA(out, (CDATA) node);
                     } else if (node instanceof EntityRef) {
-                        this.printEntityRef(out, (EntityRef)node);
+                        this.printEntityRef(out, (EntityRef) node);
                     } else {
                         this.printString(out, next);
                     }
@@ -273,11 +280,13 @@ public class AndroidXmlOutputter extends XMLOutputter {
     }
 
     private boolean endsWithWhite(String str) {
-        return str != null && str.length() > 0 && Verifier.isXMLWhitespace(str.charAt(str.length() - 1));
+        return str != null && str.length() > 0
+                && Verifier.isXMLWhitespace(str.charAt(str.length() - 1));
     }
 
     @Override
-    protected void printElement(Writer out, Element element, int level, NamespaceStack namespaces) throws IOException {
+    protected void printElement(Writer out, Element element, int level, NamespaceStack namespaces)
+            throws IOException {
         List attributes = element.getAttributes();
         List content = element.getContent();
         String space = null;
@@ -322,7 +331,7 @@ public class AndroidXmlOutputter extends XMLOutputter {
             out.write(">");
         }
 
-        while(namespaces.size() > previouslyDeclaredNamespaces) {
+        while (namespaces.size() > previouslyDeclaredNamespaces) {
             namespaces.pop();
         }
 
@@ -335,13 +344,14 @@ public class AndroidXmlOutputter extends XMLOutputter {
     }
 
     private void indent(Writer out, int level) throws IOException {
-        for(int i = 0; i < level; ++i) {
+        for (int i = 0; i < level; ++i) {
             out.write(getFormat().getIndent());
         }
     }
 
     @Override
-    protected void printAttributes(Writer writer, List attribs, Element parent, NamespaceStack ns) throws IOException {
+    protected void printAttributes(Writer writer, List attribs, Element parent, NamespaceStack ns)
+            throws IOException {
         List<Attribute> attributes = new ArrayList<>();
         for (Object attribObj : attribs) {
             attributes.add((Attribute) attribObj);
