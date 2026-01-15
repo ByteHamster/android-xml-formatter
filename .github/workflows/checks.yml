@@ -21,3 +21,5 @@ jobs:
       run: mvn -B package --file pom.xml
     - name: Test
       run: mvn test
+    - name: Check code formatting
+      run: mvn spotless:check
