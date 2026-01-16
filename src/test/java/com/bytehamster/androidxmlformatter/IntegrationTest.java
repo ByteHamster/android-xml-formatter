@@ -194,6 +194,22 @@ class IntegrationTest {
         );
     }
 
+    // === Closing Tag Preservation Test ===
+
+    @Test
+    @DisplayName("Closing tag: verify closing tag is not truncated")
+    void testClosingTagNotTruncated() throws Exception {
+        assertFormattedOutputMatches(
+                "closing_tag",
+                4, // indention
+                4, // attribute indention
+                new String[] { "android" }, // namespace order
+                new String[] { "id", "layout_width", "layout_height" }, // attribute order
+                false, // attribute sort
+                false // namespace sort
+        );
+    }
+
     // === Combined Options Test ===
 
     @Test
