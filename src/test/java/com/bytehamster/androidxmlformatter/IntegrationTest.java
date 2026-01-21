@@ -2,8 +2,8 @@ package com.bytehamster.androidxmlformatter;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -191,6 +191,22 @@ class IntegrationTest {
                 new String[] { "id", "layout_width", "layout_height" }, // attribute order
                 false, // attribute sort
                 true // namespace sort
+        );
+    }
+
+    // === Closing Tag Preservation Test ===
+
+    @Test
+    @DisplayName("Closing tag: verify closing tag is not truncated")
+    void testClosingTagNotTruncated() throws Exception {
+        assertFormattedOutputMatches(
+                "closing_tag",
+                4, // indention
+                4, // attribute indention
+                new String[] { "android" }, // namespace order
+                new String[] { "id", "layout_width", "layout_height" }, // attribute order
+                false, // attribute sort
+                false // namespace sort
         );
     }
 

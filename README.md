@@ -8,7 +8,7 @@ Formats XML files according to Android Studio's default formatting rules. By def
 
 ## Requirements
 
-- Java 8 or higher
+- Java 11 or higher
 - Maven 3.6 or higher
 
 ## Building
