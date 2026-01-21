@@ -2,8 +2,8 @@ package com.bytehamster.androidxmlformatter;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
